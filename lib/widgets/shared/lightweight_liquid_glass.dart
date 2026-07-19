@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import '../../src/renderer/liquid_glass_renderer.dart';
+import '../../utils/shader_compat.dart';
 
 import 'inherited_liquid_glass.dart';
 
@@ -688,9 +689,11 @@ class _RenderLightweightGlass extends RenderProxyBox {
   }
 
   ui.Image? _backgroundImage;
+  bool _backgroundImageFresh = false;
   set backgroundImage(ui.Image? value) {
     if (_backgroundImage == value) return;
     _backgroundImage = value;
+    _backgroundImageFresh = value != null;
     markNeedsPaint();
   }
 
@@ -826,7 +829,7 @@ class _RenderLightweightGlass extends RenderProxyBox {
     Offset bgRelativeOffset = Offset.zero;
     Size bgSize = const Size(1, 1);
 
-    if (_backgroundKey != null && _backgroundImage != null) {
+    if (_backgroundKey != null && _backgroundImage != null && !_backgroundImageFresh) {
       final boundary = _safeGetBoundary(_backgroundKey);
       if (boundary != null) {
         final bgGlobalPos = boundary.localToGlobal(Offset.zero);
@@ -842,19 +845,28 @@ class _RenderLightweightGlass extends RenderProxyBox {
     _updateShaderUniforms(size, uOrigin, uScale, bgRelativeOffset, bgSize);
 
     if (_backgroundImage != null) {
-      _shader!.setImageSampler(
+      setImageSamplerCompat(
+        _shader!,
         0,
         _backgroundImage!,
+        filterQuality: ui.FilterQuality.medium,
       );
     } else if (LightweightLiquidGlass._dummyImage != null) {
-      _shader!.setImageSampler(
+      setImageSamplerCompat(
+        _shader!,
         0,
         LightweightLiquidGlass._dummyImage!,
+        filterQuality: ui.FilterQuality.medium,
       );
     }
 
     final paint = Paint()..shader = _shader!;
     canvas.drawRect(offset & size, paint);
+
+    if (_backgroundImageFresh) {
+      _backgroundImageFresh = false;
+      markNeedsPaint();
+    }
 
     super.paint(context, offset);
   }

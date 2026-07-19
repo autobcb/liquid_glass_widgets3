@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
+import '../../../utils/shader_compat.dart';
 import '../liquid_glass_renderer.dart';
 import '../internal/render_liquid_glass_geometry.dart';
 import '../internal/snap_rect_to_pixels.dart';
@@ -337,11 +338,13 @@ abstract class LiquidGlassRenderObject extends RenderProxyBox {
           // Slot 27: uAmbientRim — full-perimeter Fresnel rim boost.
           ..setFloatUniforms(initialIndex: 27, (value) {
             value.setFloat(settings.ambientRim);
-          })
-          ..setImageSampler(
-            1,
-            geometryImage,
-          );
+          });
+        setImageSamplerCompat(
+          renderShader,
+          1,
+          geometryImage,
+          filterQuality: ui.FilterQuality.medium,
+        );
         paintLiquidGlass(
           context,
           offset,
@@ -468,10 +471,15 @@ abstract class LiquidGlassRenderObject extends RenderProxyBox {
       // Slot 27: uAmbientRim — full-perimeter Fresnel rim boost.
       ..setFloatUniforms(initialIndex: 27, (value) {
         value.setFloat(settings.ambientRim);
-      })
-      // Slot 0: captured background image (replaces the BackdropFilter read).
-      ..setImageSampler(0, capture)
-      ..setImageSampler(1, geometryImage!);
+      });
+    // Slot 0: captured background image (replaces the BackdropFilter read).
+    renderShader.setImageSampler(0, capture);
+    setImageSamplerCompat(
+      renderShader,
+      1,
+      geometryImage!,
+      filterQuality: ui.FilterQuality.medium,
+    );
 
     // Draw the capture path: no BackdropFilterLayer needed — draw directly
     // onto the canvas over the expanded clip rect.

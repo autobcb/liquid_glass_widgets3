@@ -9,6 +9,7 @@ import '../../src/renderer/liquid_glass_renderer.dart';
 
 import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter/scheduler.dart';
+import '../../utils/shader_compat.dart';
 import '../../theme/glass_theme.dart';
 import '../../widgets/interactive/liquid_glass_scope.dart';
 import 'inherited_liquid_glass.dart';
@@ -769,9 +770,11 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
   }
 
   ui.Image? _backgroundImage;
+  bool _backgroundImageFresh = false;
   set backgroundImage(ui.Image? value) {
     if (_backgroundImage == value) return;
     _backgroundImage = value;
+    _backgroundImageFresh = value != null;
     markNeedsPaint();
   }
 
@@ -962,7 +965,7 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
     Offset bgRelativeOffset = Offset.zero;
     Size bgSize = const Size(1, 1);
 
-    if (_backgroundKey != null && _backgroundImage != null) {
+    if (_backgroundKey != null && _backgroundImage != null && !_backgroundImageFresh) {
       final boundary = _backgroundKey!.currentContext?.findRenderObject()
           as RenderRepaintBoundary?;
       if (boundary != null) {
@@ -991,9 +994,11 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
     // 3. Set Sampler
     final imageToBind = _backgroundImage ?? GlassEffect._dummyImage;
     if (imageToBind != null) {
-      _shader.setImageSampler(
+      setImageSamplerCompat(
+        _shader,
         0,
         imageToBind,
+        filterQuality: ui.FilterQuality.medium,
       );
     }
 
@@ -1017,6 +1022,11 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
       offset.dy + size.height + _clipExpansion.bottom,
     );
     canvas.drawRect(expandedRect, paint);
+
+    if (_backgroundImageFresh) {
+      _backgroundImageFresh = false;
+      markNeedsPaint();
+    }
   }
 
   void _updateShaderUniforms(Size size, Offset physicalOrigin,
