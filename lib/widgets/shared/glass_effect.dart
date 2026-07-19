@@ -994,7 +994,6 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
       _shader.setImageSampler(
         0,
         imageToBind,
-        filterQuality: FilterQuality.medium,
       );
     }
 

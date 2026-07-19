@@ -297,7 +297,6 @@ class _GlassPopoverState extends State<GlassPopover>
             // lands exactly on its trigger in every embedding.
             OverlayPortal(
               controller: _overlayController,
-              overlayLocation: OverlayChildLocation.rootOverlay,
               overlayChildBuilder: _buildMorphingOverlay,
             ),
           ],

@@ -157,8 +157,10 @@ class SingleSpringController extends ChangeNotifier {
   // Internal ------------------------------------------------------------------
 
   double _clamp(double v) {
-    if (_lowerBound != null && v < _lowerBound) return _lowerBound;
-    if (_upperBound != null && v > _upperBound) return _upperBound;
+    final lowerBound = _lowerBound;
+    final upperBound = _upperBound;
+    if (lowerBound != null && v < lowerBound) return lowerBound;
+    if (upperBound != null && v > upperBound) return upperBound;
     return v;
   }
 

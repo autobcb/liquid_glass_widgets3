@@ -341,7 +341,6 @@ abstract class LiquidGlassRenderObject extends RenderProxyBox {
           ..setImageSampler(
             1,
             geometryImage,
-            filterQuality: FilterQuality.medium,
           );
         paintLiquidGlass(
           context,
@@ -472,7 +471,7 @@ abstract class LiquidGlassRenderObject extends RenderProxyBox {
       })
       // Slot 0: captured background image (replaces the BackdropFilter read).
       ..setImageSampler(0, capture)
-      ..setImageSampler(1, geometryImage!, filterQuality: FilterQuality.medium);
+      ..setImageSampler(1, geometryImage!);
 
     // Draw the capture path: no BackdropFilterLayer needed — draw directly
     // onto the canvas over the expanded clip rect.
